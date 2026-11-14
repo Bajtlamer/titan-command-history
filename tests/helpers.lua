@@ -29,4 +29,16 @@ store.settings.windowPoint = saved
 W.window = window; W.ResetPosition()
 eq(store.settings.windowPoint, nil); eq(window.points[#window.points][1], 'CENTER')
 UIParent = nil
-print('PASS helpers 6 checks')
+-- the window is opaque and raised by a click
+local drawn
+local solid = { CreateTexture = function(_, name, layer, template, sublevel)
+    local texture = { points = {} }
+    function texture:SetPoint(...) self.points[#self.points + 1] = { ... } end
+    function texture:SetColorTexture(r, g, b, a) self.color = { r, g, b, a } end
+    drawn = { layer = layer, sublevel = sublevel, texture = texture }
+    return texture
+end, SetToplevel = function(self, value) self.toplevel = value end }
+W.Solid(solid)
+eq(drawn.layer, 'BACKGROUND'); eq(drawn.sublevel, -8); eq(drawn.texture.color[4], 1); eq(solid.toplevel, true)
+W.Solid({})                                                                -- a frame without textures is left alone
+print('PASS helpers 7 checks')

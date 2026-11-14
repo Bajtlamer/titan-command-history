@@ -152,6 +152,19 @@ function Window.ResetPosition()
     if w then w:ClearAllPoints(); w:SetPoint('CENTER', UIParent, 'CENTER', 0, 0) end
 end
 
+-- The art of the window frame is partly transparent, so a window over another showed through. A solid dark layer
+-- behind the art makes the window opaque; a click raises it above the others.
+function Window.Solid(window)
+    if window.CreateTexture then
+        local background = window:CreateTexture(nil, 'BACKGROUND', nil, -8)
+        background:SetPoint('TOPLEFT', window, 'TOPLEFT', 3, -3)
+        background:SetPoint('BOTTOMRIGHT', window, 'BOTTOMRIGHT', -3, 3)
+        background:SetColorTexture(0.07, 0.07, 0.08, 1)
+        window.solidBackground = background
+    end
+    if window.SetToplevel then window:SetToplevel(true) end
+end
+
 function Window.Toggle()
     if Window.window and Window.window:IsShown() then Window.window:Hide() else Window.Show() end
 end
@@ -244,6 +257,7 @@ function Window.Show()
         Window.window = w
         if UISpecialFrames then table.insert(UISpecialFrames, name) end
         w:SetSize(WIDTH, HEIGHT)
+        Window.Solid(w)
         w:SetPoint('CENTER', UIParent, 'CENTER', 0, 0)
         w:SetClampedToScreen(true); w:SetMovable(true); w:EnableMouse(true); w:RegisterForDrag('LeftButton')
         w:SetScript('OnDragStart', function(self) self:StartMoving() end)
