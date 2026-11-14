@@ -42,6 +42,88 @@ local function button(parent, label, x, y, width, callback)
     return b
 end
 
+-- Classic panel tabs hanging below the window. Plain buttons inside the window when the client lacks the template.
+-- Lessons from the sibling addon: a new frame is already shown, so its first Show fires no OnShow, and a new tab
+-- text has a fixed width that makes GetStringWidth report the cut text. So the tabs are measured at creation
+-- (without the fixed width) and again shortly after.
+local function tabIndex(key)
+    for index, tab in ipairs(tabs) do if tab[1] == key then return index end end
+    return 1
+end
+
+local function selectTab(key)
+    Window.tab, Window.offset = key, 0
+    Window.Refresh()
+end
+
+local function labelOf(b)
+    return b.Text or (b.GetName and b:GetName() and _G[b:GetName() .. 'Text'])
+end
+
+local function fitTabs(window)
+    for _, b in ipairs(window.tabButtons) do
+        local label = labelOf(b)
+        if label and label.SetWidth then label:SetWidth(0) end
+        local width = label and label.GetStringWidth and label:GetStringWidth()
+        if type(width) ~= 'number' or width <= 0 then width = nil end
+        if PanelTemplates_TabResize then pcall(PanelTemplates_TabResize, b, nil, nil, nil, nil, width) end
+        if width and b.GetWidth and b.SetWidth and (b:GetWidth() or 0) < width + 16 then b:SetWidth(width + 30) end
+    end
+end
+
+local function panelTabs(window)
+    local previous
+    for index, tab in ipairs(tabs) do
+        local b = CreateFrame('Button', nil, window, 'PanelTabButtonTemplate')
+        b:SetID(index)
+        b:SetText(tab[2])
+        if previous then b:SetPoint('LEFT', previous, 'RIGHT', -16, 0)
+        else b:SetPoint('TOPLEFT', window, 'BOTTOMLEFT', 15, 2) end
+        local key = tab[1]
+        b:SetScript('OnClick', function() selectTab(key) end)
+        b.key = key
+        window.tabButtons[index] = b
+        previous = b
+    end
+    window.Tabs = window.tabButtons
+    PanelTemplates_SetNumTabs(window, #tabs)
+    PanelTemplates_SetTab(window, tabIndex(Window.tab))
+    window.panelTabs = true
+    fitTabs(window)
+    local function onShow()
+        fitTabs(window)
+        if C_Timer and C_Timer.After then
+            for _, delay in ipairs({ 0.1, 0.5, 1.5 }) do
+                C_Timer.After(delay, function() if window:IsShown() then fitTabs(window) end end)
+            end
+        end
+    end
+    if window.HookScript then window:HookScript('OnShow', onShow) else window:SetScript('OnShow', onShow) end
+    onShow()
+end
+
+local function buttonTabs(window)
+    local step = math.floor((WIDTH - 30) / #tabs)
+    for index, tab in ipairs(tabs) do
+        local key = tab[1]
+        local b = CreateFrame('Button', nil, window, 'UIPanelButtonTemplate')
+        b:SetSize(step - 6, 22)
+        b:SetPoint('TOPLEFT', window, 'TOPLEFT', 15 + (index - 1) * step, -65)
+        b:SetText(tab[2])
+        b:SetScript('OnClick', function() selectTab(key) end)
+        b.key = key
+        window.tabButtons[index] = b
+    end
+end
+
+function Window.Tabs(window)
+    window.tabButtons = {}
+    if PanelTemplates_SetNumTabs and PanelTemplates_SetTab and pcall(panelTabs, window) then return end
+    for _, b in pairs(window.tabButtons) do b:Hide() end
+    window.tabButtons, window.panelTabs = {}, nil
+    buttonTabs(window)
+end
+
 function Window.Toggle()
     if Window.window and Window.window:IsShown() then Window.window:Hide() else Window.Show() end
 end
@@ -73,8 +155,12 @@ function Window.Refresh()
     local rows = ns.History.Entries(Window.tab, Window.searchText)
     Window.total = #rows
     Window.offset = Window.Clamp(Window.offset, Window.total)
-    for _, tab in ipairs(w.tabButtons) do
-        if tab.key == Window.tab then tab:LockHighlight() else tab:UnlockHighlight() end
+    if w.panelTabs then
+        PanelTemplates_SetTab(w, tabIndex(Window.tab))
+    else
+        for _, tab in ipairs(w.tabButtons) do
+            if tab.key == Window.tab then tab:LockHighlight() else tab:UnlockHighlight() end
+        end
     end
     w.rangeText:SetText(Window.RangeText(Window.offset, Window.total))
     local now = time and time() or 0
@@ -114,17 +200,8 @@ function Window.Show()
         w.TitleText:SetText('Titan Command History')
         local note = text(w, 'GameFontHighlightSmall', 15, -33, WIDTH - 30)
         note:SetText('Click a line to edit it in the chat box, Run sends it at once. Right click for more. Protected commands such as /cast cannot be sent from here.')
-        w.tabButtons = {}
-        for index, tab in ipairs(tabs) do
-            local key = tab[1]
-            local b = button(w, tab[2], 15 + (index - 1) * 125, -65, 120, function()
-                Window.tab, Window.offset = key, 0
-                Window.Refresh()
-            end)
-            b.key = key
-            w.tabButtons[index] = b
-        end
-        w.rangeText = text(w, 'GameFontHighlightSmall', 400, -70, 200)
+        Window.Tabs(w)
+        w.rangeText = text(w, 'GameFontHighlightSmall', 15, -70, 300)
         text(w, 'GameFontNormalSmall', 560, -70, 50):SetText('Search')
         local search = CreateFrame('EditBox', nil, w, 'InputBoxTemplate')
         search:SetSize(110, 22); search:SetPoint('TOPLEFT', w, 'TOPLEFT', 615, -65); search:SetAutoFocus(false)
