@@ -1,12 +1,12 @@
 local _, ns = ...
--- The history window: tabs Commands, Conversations and Pinned, a search box, a scroll bar. A click puts the line
+-- The history window: tabs Commands, Conversations and Favorites, a search box, a scroll bar. A click puts the line
 -- into the chat box, Run sends it, right click opens a menu.
 local Window = { offset = 0, total = 0, tab = 'command' }
 ns.Window = Window
 
 local ROWS, ROW_HEIGHT, WHEEL_STEP = 16, 22, 3
 local WIDTH, HEIGHT, ROW_WIDTH = 790, 540, 730
-local tabs = { { 'command', 'Commands' }, { 'chat', 'Conversations' }, { 'pinned', 'Pinned' } }
+local tabs = { { 'command', 'Commands' }, { 'chat', 'Conversations' }, { 'favorite', 'Favorites' } }
 local GOLD, GRAY = '|cffffd100', '|cff9d9d9d'
 
 function Window.Clamp(offset, total)
@@ -139,21 +139,36 @@ local function rowMenu(row)
     MenuUtil.CreateContextMenu(row, function(_, root)
         root:CreateButton('Run', function() ns.Actions.Run(entry.text) end)
         root:CreateButton('Edit in chat', function() ns.Actions.Insert(entry.text) end)
-        root:CreateCheckbox('Pinned', function() return entry.pinned == true end, function()
-            ns.History.SetPinned(entry, not entry.pinned); Window.Refresh()
-        end)
-        if entry.kind == 'command' then
-            root:CreateButton('Add to quick commands', function() ns.History.AddQuick(entry.text) end)
+        if Window.tab == 'favorite' then
+            root:CreateButton('Move up', function() ns.History.MoveFavorite(entry, -1); Window.Refresh() end)
+            root:CreateButton('Move down', function() ns.History.MoveFavorite(entry, 1); Window.Refresh() end)
+            root:CreateButton('Remove from favorites', function() ns.History.RemoveFavorite(entry); Window.Refresh() end)
+        else
+            root:CreateCheckbox('Favorite', function() return ns.History.IsFavorite(entry.text) ~= nil end, function()
+                ns.History.ToggleFavorite(entry.text); Window.Refresh()
+            end)
+            root:CreateButton('Delete', function() ns.History.Remove(entry); Window.Refresh(); ns.Titan.Refresh() end)
         end
-        root:CreateButton('Delete', function() ns.History.Remove(entry); Window.Refresh(); ns.Titan.Refresh() end)
     end)
+end
+
+local function addFavorite()
+    local box = Window.window and Window.window.addBox
+    if not box then return end
+    if ns.History.AddFavorite(box:GetText()) then box:SetText('') end
+    box:ClearFocus()
+    Window.offset = 0
+    Window.Refresh()
 end
 
 function Window.Refresh()
     local w = Window.window
     if not w or not w:IsShown() then return end
-    local rows = ns.History.Entries(Window.tab, Window.searchText)
+    local favorites = Window.tab == 'favorite'
+    local rows = favorites and ns.History.FavoriteEntries(Window.searchText)
+        or ns.History.Entries(Window.tab, Window.searchText)
     Window.total = #rows
+    w.addBox:SetShown(favorites); w.addButton:SetShown(favorites); w.rangeText:SetShown(not favorites)
     Window.offset = Window.Clamp(Window.offset, Window.total)
     if w.panelTabs then
         PanelTemplates_SetTab(w, tabIndex(Window.tab))
@@ -169,9 +184,14 @@ function Window.Refresh()
         local entry = rows[Window.offset + index]
         line.entry = entry
         if entry then
-            line.text:SetText((entry.pinned and (GOLD .. '* |r') or '') .. entry.text)
-            local uses = (entry.uses or 1) > 1 and (' x' .. entry.uses) or ''
-            line.info:SetText(GRAY .. Window.Ago(math.max(0, now - (entry.at or now))) .. uses .. '|r')
+            if favorites then
+                line.text:SetText(entry.text)
+                line.info:SetText('')
+            else
+                line.text:SetText((ns.History.IsFavorite(entry.text) and (GOLD .. '* |r') or '') .. entry.text)
+                local uses = (entry.uses or 1) > 1 and (' x' .. entry.uses) or ''
+                line.info:SetText(GRAY .. Window.Ago(math.max(0, now - (entry.at or now))) .. uses .. '|r')
+            end
             line:Show()
         else line:Hide() end
     end
@@ -180,6 +200,10 @@ function Window.Refresh()
     w.slider:SetMinMaxValues(0, last); w.slider:SetValue(Window.offset)
     w.slider.syncing = false
     if last > 0 then w.slider:Show() else w.slider:Hide() end
+    if favorites then
+        w.footer:SetText(#ns.History.Favorites() .. ' favorites, shared by all characters. Type a line above and press Enter to add one.')
+        return
+    end
     w.footer:SetText(ns.History.Count() .. ' saved lines (' .. (ns.History.Settings().scope == 'character'
         and 'this character' or 'all characters') .. ', limit ' .. ns.History.Settings().max .. ').')
 end
@@ -199,9 +223,15 @@ function Window.Show()
         w:SetScript('OnHide', function() GameTooltip:Hide() end)
         w.TitleText:SetText('Titan Command History')
         local note = text(w, 'GameFontHighlightSmall', 15, -33, WIDTH - 30)
-        note:SetText('Click a line to edit it in the chat box, Run sends it at once. Right click for more. Protected commands such as /cast cannot be sent from here.')
+        note:SetText('Click a line to edit it in the chat box, Run sends it at once. Right click for more (favorites, delete). Protected commands such as /cast cannot be sent from here.')
         Window.Tabs(w)
         w.rangeText = text(w, 'GameFontHighlightSmall', 15, -70, 300)
+        w.addBox = CreateFrame('EditBox', nil, w, 'InputBoxTemplate')
+        w.addBox:SetSize(380, 22); w.addBox:SetPoint('TOPLEFT', w, 'TOPLEFT', 20, -65); w.addBox:SetAutoFocus(false)
+        w.addBox:SetMaxLetters(255)
+        w.addBox:SetScript('OnEnterPressed', addFavorite)
+        w.addBox:SetScript('OnEscapePressed', function(self) self:ClearFocus() end)
+        w.addButton = button(w, 'Add favorite', 410, -65, 110, addFavorite)
         text(w, 'GameFontNormalSmall', 560, -70, 50):SetText('Search')
         local search = CreateFrame('EditBox', nil, w, 'InputBoxTemplate')
         search:SetSize(110, 22); search:SetPoint('TOPLEFT', w, 'TOPLEFT', 615, -65); search:SetAutoFocus(false)

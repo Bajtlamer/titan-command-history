@@ -6,22 +6,29 @@ ns.History = History
 History.DEFAULT_QUICK = { '/reload', '/sit', '/stand', '/dance', '/wave', '/cheer', '/laugh', '/thank', '/bow' }
 History.DEFAULTS = { max = 500, recordChat = true, onlySuccess = true, scope = 'account', showMinimapButton = true }
 
-local function copy(list)
-    local result = {}
-    for index, value in ipairs(list) do result[index] = value end
-    return result
-end
-
 -- db is the saved variables table, characterID identifies the logged in character.
 function History.Init(db, characterID)
     db.settings = db.settings or {}
     for key, value in pairs(History.DEFAULTS) do
         if db.settings[key] == nil then db.settings[key] = value end
     end
-    if db.settings.quick == nil then db.settings.quick = copy(History.DEFAULT_QUICK) end
     db.account = db.account or { entries = {} }
     db.characters = db.characters or {}
     History.db, History.characterID = db, characterID
+    -- Favorites replaced the earlier quick commands and pinned lines: both are carried over once.
+    if db.favorites == nil then
+        db.favorites = {}
+        for _, text in ipairs(db.settings.quick or History.DEFAULT_QUICK) do History.AddFavorite(text) end
+        db.settings.quick = nil
+        local lists = { db.account.entries }
+        for _, character in pairs(db.characters) do lists[#lists + 1] = character.entries end
+        for _, entries in ipairs(lists) do
+            for _, entry in ipairs(entries) do
+                if entry.pinned then History.AddFavorite(entry.text) end
+                entry.pinned = nil
+            end
+        end
+    end
 end
 
 function History.Settings() return History.db.settings end
@@ -50,10 +57,7 @@ function History.Classify(text)
 end
 
 local function limit(entries, max)
-    local index = 1
-    while #entries > max and index <= #entries do
-        if entries[index].pinned then index = index + 1 else table.remove(entries, index) end
-    end
+    while #entries > max do table.remove(entries, 1) end
 end
 
 -- Adds a line. The same line twice in a row only counts as one more use, like a shell with ignoredups.
@@ -73,13 +77,13 @@ function History.Add(text, now)
     return entry, true
 end
 
--- Newest first. kind is 'command', 'chat', 'pinned' or 'all'; query is a plain text filter.
+-- Newest first. kind is 'command', 'chat' or 'all'; query is a plain text filter.
 function History.Entries(kind, query)
     local entries, result = History.List(), {}
     local needle = query and query ~= '' and query:lower() or nil
     for index = #entries, 1, -1 do
         local entry = entries[index]
-        local wanted = kind == 'all' or kind == nil or (kind == 'pinned' and entry.pinned) or entry.kind == kind
+        local wanted = kind == 'all' or kind == nil or entry.kind == kind
         if wanted and (not needle or entry.text:lower():find(needle, 1, true)) then result[#result + 1] = entry end
     end
     return result
@@ -94,8 +98,6 @@ end
 
 function History.Count() return #History.List() end
 
-function History.SetPinned(entry, pinned) entry.pinned = pinned or nil end
-
 function History.Remove(entry)
     local entries = History.List()
     for index, other in ipairs(entries) do
@@ -104,30 +106,62 @@ function History.Remove(entry)
     return false
 end
 
--- Empties the history; pinned lines stay unless keepPinned is false.
-function History.Clear(keepPinned)
-    local entries, kept = History.List(), {}
-    if keepPinned then
-        for _, entry in ipairs(entries) do if entry.pinned then kept[#kept + 1] = entry end end
-    end
+-- Empties the history. Favorites are a separate list and stay.
+function History.Clear()
+    local entries = History.List()
     for index = #entries, 1, -1 do entries[index] = nil end
-    for index, entry in ipairs(kept) do entries[index] = entry end
 end
 
-function History.Quick() return History.db.settings.quick end
+-- Favorites: lines the player keeps on purpose, in the order chosen, for all characters. They are not part of the
+-- history, so they do not take part in the arrow keys and are not trimmed.
+function History.Favorites() return History.db.favorites end
 
-function History.AddQuick(text)
+function History.IsFavorite(text)
+    for _, favorite in ipairs(History.db.favorites) do if favorite.text == text then return favorite end end
+    return nil
+end
+
+function History.AddFavorite(text)
     text = History.Trim(text)
-    if text == '' then return false end
-    for _, existing in ipairs(History.Quick()) do if existing == text then return false end end
-    table.insert(History.Quick(), text)
+    if text == '' or History.IsFavorite(text) then return false end
+    table.insert(History.db.favorites, { text = text, kind = History.Classify(text) })
     return true
 end
 
-function History.RemoveQuick(text)
-    local quick = History.Quick()
-    for index, existing in ipairs(quick) do
-        if existing == text then table.remove(quick, index); return true end
+function History.RemoveFavorite(favorite)
+    for index, other in ipairs(History.db.favorites) do
+        if other == favorite then table.remove(History.db.favorites, index); return true end
     end
     return false
+end
+
+function History.ToggleFavorite(text)
+    local existing = History.IsFavorite(text)
+    if existing then History.RemoveFavorite(existing); return false end
+    History.AddFavorite(text)
+    return true
+end
+
+-- Moves a favorite up (delta -1) or down (delta 1) in the list.
+function History.MoveFavorite(favorite, delta)
+    local list = History.db.favorites
+    for index, other in ipairs(list) do
+        if other == favorite then
+            local target = index + delta
+            if target < 1 or target > #list then return false end
+            list[index], list[target] = list[target], list[index]
+            return true
+        end
+    end
+    return false
+end
+
+-- The favorites in their order, filtered by a plain text query.
+function History.FavoriteEntries(query)
+    local needle = query and query ~= '' and query:lower() or nil
+    local result = {}
+    for _, favorite in ipairs(History.db.favorites) do
+        if not needle or favorite.text:lower():find(needle, 1, true) then result[#result + 1] = favorite end
+    end
+    return result
 end

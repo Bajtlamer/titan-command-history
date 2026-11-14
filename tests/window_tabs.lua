@@ -31,6 +31,7 @@ test('the three tabs use the classic panel tab template and select the active on
     ns.Window.Tabs(window)
     eq(numTabs, 3); eq(selected, 1); eq(#window.tabButtons, 3)
     eq(window.tabButtons[2].template, 'PanelTabButtonTemplate'); eq(window.tabButtons[2].text, 'Conversations')
+    eq(window.tabButtons[3].text, 'Favorites')
     eq(window.tabButtons[3].calls.SetID[1], 3); eq(window.panelTabs, true)
 end)
 
@@ -45,7 +46,7 @@ test('clicking a tab selects it and returns to the top of the list', function()
     ns.Window.Refresh = function() refreshed = refreshed + 1 end
     window.tabButtons[2].scripts.OnClick()
     eq(ns.Window.tab, 'chat'); eq(ns.Window.offset, 0); eq(refreshed, 1)
-    window.tabButtons[3].scripts.OnClick(); eq(ns.Window.tab, 'pinned')
+    window.tabButtons[3].scripts.OnClick(); eq(ns.Window.tab, 'favorite')
 end)
 
 test('tabs are measured when created, without the fixed text width, and again after the window is shown', function()

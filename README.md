@@ -7,9 +7,10 @@ A persistent, shell style history of what you send from the chat box, for WoW Fo
 - Remembers commands (text starting with a slash) and conversation lines, saved between sessions.
 - Up and down arrow in the chat box walk through them in the order they were sent, like a shell, also after a reload. Typing ends the walk, down returns to what you were typing.
 - Records only what worked, like a shell: a slash word the client does not know is dropped, and so is a line followed by an error message within 0.4 seconds. A setting records everything instead.
-- A window with classic panel tabs below it (Commands, Conversations, Pinned), a search box and a scroll bar. Click a line to edit it in the chat box and press Enter, or press Run to send it at once. Right click a line to pin it, add it to the quick commands or delete it.
+- A window with classic panel tabs below it (Commands, Conversations, Favorites), a search box and a scroll bar. Click a line to edit it in the chat box and press Enter, or press Run to send it at once. Right click a line to make it a favorite or delete it.
+- Favorites: a separate list shared by all characters, kept in the order you choose (right click: Move up, Move down, Remove). Add one from a history line (right click, Favorite) or type any command or line in the Favorites tab and press Enter. Favorites are not trimmed and not touched when the history is cleared. A starter list (/reload, /sit, /stand, /dance, /wave, /cheer, /laugh, /thank, /bow) is created once.
 - A minimap button (left click: window, right click: menu, drag to move) and a LibDataBroker object that Titan Panel shows as "History: N".
-- Right click menu: quick commands that run with one click (/reload, /sit, /stand, /dance, /wave and more, editable from the history window), settings (record conversation lines, record only successful input, minimap button, shared or per character history, number of saved lines) and clearing the history while keeping pinned lines.
+- Right click menu: the favorites, which run with one click, removing a favorite, settings (record conversation lines, record only successful input, minimap button, shared or per character history, number of saved lines) and clearing the history (favorites stay).
 
 ## Limits
 
@@ -19,7 +20,7 @@ A persistent, shell style history of what you send from the chat box, for WoW Fo
 
 ## Status
 
-Version 0.1.2-alpha. Automated tests cover the store, the recording rules and the arrow key logic. The client behaviour listed in plan-command-history.md still has to be confirmed in game.
+Version 0.1.3-alpha. Automated tests cover the store, the recording rules and the arrow key logic. The client behaviour listed in plan-command-history.md still has to be confirmed in game.
 
 ## Development
 

@@ -10,19 +10,19 @@ function Menu.Open(owner)
     MenuUtil.CreateContextMenu(owner or UIParent, function(_, root)
         root:CreateTitle('Titan Command History ' .. ns.version)
         root:CreateButton('Open history', function() ns.Window.Show() end)
-        local quick = root:CreateButton('Quick commands')
-        if quick.SetScrollMode then quick:SetScrollMode(350) end
-        for _, command in ipairs(ns.History.Quick()) do
-            local line = command
-            quick:CreateButton(line, function() ns.Actions.Run(line) end)
+        local favorites = root:CreateButton('Favorites')
+        if favorites.SetScrollMode then favorites:SetScrollMode(350) end
+        for _, favorite in ipairs(ns.History.Favorites()) do
+            local line = favorite.text
+            favorites:CreateButton(line, function() ns.Actions.Run(line) end)
         end
-        if #ns.History.Quick() == 0 then quick:CreateTitle('None yet.') end
-        quick:CreateTitle('Add commands from the history window (right click a line).')
-        local remove = root:CreateButton('Remove a quick command')
+        if #ns.History.Favorites() == 0 then favorites:CreateTitle('None yet.') end
+        favorites:CreateTitle('Add favorites in the history window (right click a line, or type one in the Favorites tab).')
+        local remove = root:CreateButton('Remove a favorite')
         if remove.SetScrollMode then remove:SetScrollMode(350) end
-        for _, command in ipairs(ns.History.Quick()) do
-            local line = command
-            remove:CreateButton(line, function() ns.History.RemoveQuick(line) end)
+        for _, favorite in ipairs(ns.History.Favorites()) do
+            local item = favorite
+            remove:CreateButton(item.text, function() ns.History.RemoveFavorite(item); ns.Window.Refresh() end)
         end
         local settings = root:CreateButton('Settings')
         settings:CreateCheckbox('Record conversation lines', function() return setting('recordChat') end, function()
@@ -50,9 +50,9 @@ function Menu.Open(owner)
             end)
         end
         local clear = root:CreateButton('Clear history')
-        clear:CreateTitle('Pinned lines are kept.')
+        clear:CreateTitle('Favorites are kept.')
         clear:CreateButton('Confirm', function()
-            ns.History.Clear(true); ns.Window.Refresh(); ns.Titan.Refresh()
+            ns.History.Clear(); ns.Window.Refresh(); ns.Titan.Refresh()
         end)
         root:CreateButton('Print the recording log to chat', function() ns.PrintLog() end)
     end)
