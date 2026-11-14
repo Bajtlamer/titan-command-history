@@ -1,0 +1,16 @@
+## Interface: 16001
+## Title: Titan Command History
+## Notes: Persistent, shell style history of chat commands and lines with a window, Titan Panel plugin and minimap button.
+## Version: 0.1.0-alpha
+## OptionalDeps: Titan
+## SavedVariables: TitanCommandHistoryDB
+Namespace.lua
+History.lua
+Capture.lua
+Arrows.lua
+Actions.lua
+Window.lua
+MinimapButton.lua
+Menu.lua
+Titan.lua
+Core.lua
