@@ -21,7 +21,7 @@ local function flush(timers) for _, fn in ipairs(timers) do fn() end; for index 
 
 test('known slash words are recorded after the waiting time', function()
     local capture, H, timers = fresh()
-    capture:Sent('/reload'); capture:Sent('/DANCE'); capture:Sent('/s hello')
+    capture:Sent('/say hi'); capture:Sent('/DANCE'); capture:Sent('/s hello')
     eq(H.Count(), 0)                         -- still waiting for a possible error
     flush(timers)
     eq(H.Count(), 3)
@@ -66,6 +66,24 @@ test('a word registered later is found by rebuilding the set once', function()
     capture:Sent('/late'); flush(timers); eq(H.Count(), 0)
     env.SLASH_LATE1 = '/late'
     capture:Sent('/late'); flush(timers); eq(H.Count(), 1)
+end)
+
+test('commands that reload or close the game are recorded at once', function()
+    local capture, H = fresh()
+    capture.api.Env = function() return { SLASH_RELOAD1 = '/reload', SLASH_QUIT1 = '/quit' } end
+    capture:Sent('/reload'); eq(H.Count(), 1)       -- no waiting: the reload would cancel the timer
+    capture:Sent('/quit'); eq(H.Count(), 2)
+end)
+
+test('lines still waiting when the game closes are kept unless they failed', function()
+    local capture, H, timers = fresh()
+    capture:Sent('/reload'); capture:Sent('/dance'); capture:Sent('hello')
+    capture:Failed()                                  -- an error arrived for everything pending at that moment
+    capture:Sent('/dance')
+    capture:Flush()
+    eq(H.Count(), 2)                                  -- /reload recorded at once, the second /dance flushed
+    flush(timers)                                     -- the timers that fire later find nothing pending
+    eq(H.Count(), 2); eq(H.List()[2].uses, 1)         -- and do not count the line twice
 end)
 
 test('blank lines are ignored', function()

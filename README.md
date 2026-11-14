@@ -19,7 +19,7 @@ A persistent, shell style history of what you send from the chat box, for WoW Fo
 
 ## Status
 
-Version 0.1.1-alpha. Automated tests cover the store, the recording rules and the arrow key logic. The client behaviour listed in plan-command-history.md still has to be confirmed in game.
+Version 0.1.2-alpha. Automated tests cover the store, the recording rules and the arrow key logic. The client behaviour listed in plan-command-history.md still has to be confirmed in game.
 
 ## Development
 

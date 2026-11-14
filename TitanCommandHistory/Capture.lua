@@ -7,6 +7,8 @@ Capture.__index = Capture
 ns.Capture = Capture
 
 Capture.WAIT = 0.4
+-- Commands that end or restart the interface: the waiting time would never run out, so they are recorded at once.
+Capture.IMMEDIATE = { reload = true, reloadui = true, rl = true, logout = true, camp = true, quit = true, exit = true }
 local LOG_LIMIT = 30
 
 -- The slash words the client knows: SLASH_<NAME><n> globals (commands and chat types) and emote words.
@@ -51,6 +53,10 @@ function Capture:Sent(text)
         self.api.Add(text); self:Log(text, 'recorded'); return
     end
     if kind == 'command' and not self:Known(text) then self:Log(text, 'unknown-command'); return end
+    local word = text:match('^/(%S+)')
+    if word and Capture.IMMEDIATE[word:lower()] then
+        self.api.Add(text); self:Log(text, 'recorded'); return
+    end
     local line = { text = text, failed = false }
     self.pending[#self.pending + 1] = line
     self.api.After(Capture.WAIT, function() self:Resolve(line) end)
@@ -62,10 +68,24 @@ function Capture:Failed()
 end
 
 function Capture:Resolve(line)
+    local found = false
     for index, other in ipairs(self.pending) do
-        if other == line then table.remove(self.pending, index); break end
+        if other == line then table.remove(self.pending, index); found = true; break end
     end
+    if not found then return end -- already recorded by Flush
     if line.failed then self:Log(line.text, 'failed'); return end
     self.api.Add(line.text)
     self:Log(line.text, 'recorded')
+end
+
+-- The game is closing or reloading: lines still waiting have had no error so far, so they count as successful.
+function Capture:Flush()
+    local waiting = self.pending
+    self.pending = {}
+    for _, line in ipairs(waiting) do
+        if not line.failed then
+            self.api.Add(line.text)
+            self:Log(line.text, 'recorded')
+        end
+    end
 end

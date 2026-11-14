@@ -78,6 +78,12 @@ frame:SetScript('OnEvent', function(_, event, ...)
         hookBoxes()
         ns.Titan.Initialize()
         ns.MinimapButton.Attach()
+        -- Titan Panel may read the plugin text after this point, so the count is set again a little later.
+        C_Timer.After(2, ns.Titan.Refresh)
+    elseif event == 'PLAYER_ENTERING_WORLD' then
+        if ns.Titan and ns.db then ns.Titan.Refresh() end
+    elseif event == 'PLAYER_LOGOUT' then
+        if capture then capture:Flush() end
     elseif event == 'UI_ERROR_MESSAGE' then
         if capture then capture:Failed() end
     elseif event == 'CHAT_MSG_SYSTEM' then
@@ -89,6 +95,7 @@ frame:SetScript('OnEvent', function(_, event, ...)
         end
     end
 end)
-for _, event in ipairs({ 'ADDON_LOADED', 'PLAYER_LOGIN', 'UI_ERROR_MESSAGE', 'CHAT_MSG_SYSTEM' }) do
+for _, event in ipairs({ 'ADDON_LOADED', 'PLAYER_LOGIN', 'PLAYER_ENTERING_WORLD', 'PLAYER_LOGOUT', 'UI_ERROR_MESSAGE',
+    'CHAT_MSG_SYSTEM' }) do
     frame:RegisterEvent(event)
 end
