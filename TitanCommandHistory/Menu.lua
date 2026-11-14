@@ -49,6 +49,7 @@ function Menu.Open(owner)
                 ns.History.Settings().max = max
             end)
         end
+        settings:CreateButton('Reset window position', function() ns.Window.ResetPosition() end)
         local clear = root:CreateButton('Clear history')
         clear:CreateTitle('Favorites are kept.')
         clear:CreateButton('Confirm', function()

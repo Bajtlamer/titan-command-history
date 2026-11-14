@@ -9,6 +9,7 @@ A persistent, shell style history of what you send from the chat box, for WoW Fo
 - Records only what worked, like a shell: a slash word the client does not know is dropped, and so is a line followed by an error message within 0.4 seconds. A setting records everything instead.
 - A window with classic panel tabs below it (Commands, Conversations, Favorites), a search box and a scroll bar. Click a line to edit it in the chat box and press Enter, or press Run to send it at once. Right click a line to make it a favorite or delete it.
 - Favorites: a separate list shared by all characters, kept in the order you choose (right click: Move up, Move down, Remove). Add one from a history line (right click, Favorite) or type any command or line in the Favorites tab and press Enter. Favorites are not trimmed and not touched when the history is cleared. A starter list (/reload, /sit, /stand, /dance, /wave, /cheer, /laugh, /thank, /bow) is created once.
+- The window opens where you left it: its position is saved, also after /reload and a restart (menu: Settings > Reset window position).
 - A minimap button (left click: window, right click: menu, drag to move) and a LibDataBroker object that Titan Panel shows as "History: N".
 - Right click menu: the favorites, which run with one click, removing a favorite, settings (record conversation lines, record only successful input, minimap button, shared or per character history, number of saved lines) and clearing the history (favorites stay).
 
@@ -20,7 +21,7 @@ A persistent, shell style history of what you send from the chat box, for WoW Fo
 
 ## Status
 
-Version 0.1.3-alpha. Automated tests cover the store, the recording rules and the arrow key logic. The client behaviour listed in plan-command-history.md still has to be confirmed in game.
+Version 0.1.4-alpha. Automated tests cover the store, the recording rules and the arrow key logic. The client behaviour listed in plan-command-history.md still has to be confirmed in game.
 
 ## Development
 

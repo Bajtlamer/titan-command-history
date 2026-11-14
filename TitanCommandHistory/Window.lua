@@ -124,6 +124,34 @@ function Window.Tabs(window)
     buttonTabs(window)
 end
 
+-- The position is kept in the saved settings as { point, relative point, x, y } relative to the screen, so the window
+-- opens where it was left, also after /reload and a restart.
+local function validPosition(saved)
+    return type(saved) == 'table' and type(saved[1]) == 'string' and type(saved[2]) == 'string'
+        and type(saved[3]) == 'number' and type(saved[4]) == 'number'
+        and saved[3] == saved[3] and saved[4] == saved[4] and math.abs(saved[3]) < 1e5 and math.abs(saved[4]) < 1e5
+end
+
+function Window.SavePosition(window)
+    if not window.GetPoint then return end
+    local point, _, relative, x, y = window:GetPoint()
+    if point then ns.History.Settings().windowPoint = { point, relative or point, x or 0, y or 0 } end
+end
+
+function Window.RestorePosition(window)
+    local saved = ns.History.Settings().windowPoint
+    if not validPosition(saved) then return false end
+    window:ClearAllPoints()
+    window:SetPoint(saved[1], UIParent, saved[2], saved[3], saved[4])
+    return true
+end
+
+function Window.ResetPosition()
+    ns.History.Settings().windowPoint = nil
+    local w = Window.window
+    if w then w:ClearAllPoints(); w:SetPoint('CENTER', UIParent, 'CENTER', 0, 0) end
+end
+
 function Window.Toggle()
     if Window.window and Window.window:IsShown() then Window.window:Hide() else Window.Show() end
 end
@@ -219,7 +247,8 @@ function Window.Show()
         w:SetPoint('CENTER', UIParent, 'CENTER', 0, 0)
         w:SetClampedToScreen(true); w:SetMovable(true); w:EnableMouse(true); w:RegisterForDrag('LeftButton')
         w:SetScript('OnDragStart', function(self) self:StartMoving() end)
-        w:SetScript('OnDragStop', function(self) self:StopMovingOrSizing() end)
+        w:SetScript('OnDragStop', function(self) self:StopMovingOrSizing(); Window.SavePosition(self) end)
+        Window.RestorePosition(w)
         w:SetScript('OnHide', function() GameTooltip:Hide() end)
         w.TitleText:SetText('Titan Command History')
         local note = text(w, 'GameFontHighlightSmall', 15, -33, WIDTH - 30)
