@@ -37,3 +37,28 @@ Editing long macro text in a multi line box and copying it out in 255 character 
 ## Favorites (0.1.3-alpha)
 
 Favorites replace the earlier pinned lines and quick commands: one list, shared by all characters, kept in the chosen order and outside the history (not trimmed, not part of the arrow keys, not touched by Clear). A favorite can be any command or line. They are added from a history line or typed in the Favorites tab, run from the window and from the menu. Earlier quick commands and pinned lines are carried over once.
+
+## Status (0.1.5-alpha) and continuation
+
+Implemented: persistent history with the arrow keys, recording only what worked (a slash word that does not exist is dropped, a line followed by an error within 0.4 seconds is dropped, /reload, /reloadui, /rl, /logout, /camp, /quit and /exit are recorded at once, lines still waiting are kept when the game closes), conversation lines (switchable), the window with panel tabs below it (Commands, Conversations, Favorites), search, scroll bar, Run and edit in the chat box, favorites (a separate list, typed or taken from a history line, ordered, run from the menu), the minimap button, the LibDataBroker object for Titan Panel, a saved window position, an opaque window and a diagnostic log that never holds the text of a line.
+
+The pinned facts the code relies on and that were confirmed live: EditBox:AddHistoryLine is called with the sent text, plain up and down arrows reach OnArrowPressed with the alt mode off, errors after a failed line arrive as UI_ERROR_MESSAGE, and the count shows after a reload.
+
+### Live checks still to do
+
+- [ ] Arrow keys walk through the saved history after a /reload and after a restart, oldest to newest, and down returns to the text that was being typed.
+- [ ] A mistyped command (unknown word) is not recorded; a known command that fails (for example casting without mana) is not recorded; a conversation line to a player that is offline (whisper) is not recorded; check the log (menu: Print the recording log to chat).
+- [ ] Conversation lines can be switched off in the settings; whispers and conversation lines never appear in the diagnostic log.
+- [ ] The window: tabs fit at the first opening after a restart, the position is kept, it is opaque over other windows, a click on a line puts it in the chat box, Run sends it, right click: Run, Edit in chat, Favorite, Delete.
+- [ ] Favorites: typed in the Favorites tab, added from a history line, moved up and down, removed, run from the menu; the starter list (/reload, /sit, /stand, /dance, /wave, /cheer, /laugh, /thank, /bow) was created once and earlier quick commands and pinned lines were carried over.
+- [ ] The minimap button (left click window, right click menu, drag) and the Titan plugin text "History: N", also without Titan Panel installed.
+- [ ] Protected commands (/cast, /use) sent with Run are only put into the chat box, as documented; confirm what the client does.
+- [ ] Limit of lines (100 to 1000) and the scope (all characters or this character) behave as set.
+
+### Ideas and optimization
+
+- A multi line editor for long macros with a copy out in lines of at most 255 characters.
+- Export of the history as text, sorting by use count, a separate favorites list per character.
+- Measure the cost of the hook on the chat edit boxes and the size of the saved history at 1000 lines.
+- Keep the same window code in step with the sibling addon (opaque layer, saved position, panel tab measuring): the lessons are listed in plans/plan-live-verification-and-optimization.md of the Titan Gathered Forever v3 repository.
+
