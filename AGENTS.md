@@ -12,3 +12,5 @@ Target Forever 1.60.1, interface 16001. Runtime uses Lua 5.1 semantics. Titan Pa
 ## Repository hygiene
 
 Runtime files live only in TitanCommandHistory/. Tools, tests and the ref-, book- and tmp- documents stay at root; plans live in plans/. Exclude dist/, SavedVariables and temporary data from Git. Documents use plan-, ref-, book-, tmp- prefixes; every plan-* document lives in plans/, not in the repository root. No emoji, decorative glyphs or em dashes.
+
+Commit messages and pull request descriptions carry no attribution to an AI tool: no Co-Authored-By trailer and no "Generated with" line. The owner does not want an assistant listed as a contributor. Check a message before committing.
