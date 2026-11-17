@@ -12,7 +12,7 @@ function Titan.Initialize()
     local ldb = LibStub and LibStub:GetLibrary('LibDataBroker-1.1', true)
     if not ldb then return end
     Titan.broker = ldb:NewDataObject('TitanCommandHistory', {
-        type = 'data source', label = 'History', text = 'History: ' .. ns.History.Count(), icon = 'Interface\\Icons\\INV_Misc_Note_01',
+        type = 'data source', label = 'History', text = 'History: ' .. ns.History.Count(), icon = 'Interface\\AddOns\\TitanCommandHistory\\Artwork\\AddonIcon',
         OnEnter = function(owner)
             GameTooltip:SetOwner(owner, 'ANCHOR_BOTTOM')
             GameTooltip:AddLine('|cffffd100Titan Command History|r')

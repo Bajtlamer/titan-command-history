@@ -11,7 +11,7 @@ def version():
  return value
 def files():
  toc=RUNTIME/'TitanCommandHistory.toc'
- paths=[toc]+[RUNTIME/l.strip() for l in toc.read_text().splitlines() if l.strip().endswith('.lua')]
+ paths=[toc,RUNTIME/'Artwork/AddonIcon.tga']+[RUNTIME/l.strip() for l in toc.read_text().splitlines() if l.strip().endswith('.lua')]
  for p in paths:
   if not p.is_file() or not p.resolve().is_relative_to(RUNTIME.resolve()):raise ValueError('Invalid runtime path')
  return paths

@@ -38,7 +38,7 @@ Editing long macro text in a multi line box and copying it out in 255 character 
 
 Favorites replace the earlier pinned lines and quick commands: one list, shared by all characters, kept in the chosen order and outside the history (not trimmed, not part of the arrow keys, not touched by Clear). A favorite can be any command or line. They are added from a history line or typed in the Favorites tab, run from the window and from the menu. Earlier quick commands and pinned lines are carried over once.
 
-## Status (0.1.5-alpha) and continuation
+## Status (0.1.6-alpha) and continuation
 
 Implemented: persistent history with the arrow keys, recording only what worked (a slash word that does not exist is dropped, a line followed by an error within 0.4 seconds is dropped, /reload, /reloadui, /rl, /logout, /camp, /quit and /exit are recorded at once, lines still waiting are kept when the game closes), conversation lines (switchable), the window with panel tabs below it (Commands, Conversations, Favorites), search, scroll bar, Run and edit in the chat box, favorites (a separate list, typed or taken from a history line, ordered, run from the menu), the minimap button, the LibDataBroker object for Titan Panel, a saved window position, an opaque window and a diagnostic log that never holds the text of a line.
 
@@ -62,3 +62,7 @@ The pinned facts the code relies on and that were confirmed live: EditBox:AddHis
 - Measure the cost of the hook on the chat edit boxes and the size of the saved history at 1000 lines.
 - Keep the same window code in step with the sibling addon (opaque layer, saved position, panel tab measuring): the lessons are listed in plans/plan-live-verification-and-optimization.md of the Titan Gathered Forever v3 repository.
 
+
+## Artwork verification, 2026-11-16
+
+Version 0.1.6-alpha adds an original journal, quill and hourglass emblem to IconTexture, Titan and the minimap. Automated Lua suites, package inclusion and installation byte checks are separate from pending live rendering after a full client restart. No source publication or release upload.

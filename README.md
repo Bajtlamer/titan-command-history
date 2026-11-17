@@ -21,8 +21,20 @@ A persistent, shell style history of what you send from the chat box, for WoW Fo
 
 ## Status
 
-Version 0.1.5-alpha. Automated tests cover the store, the recording rules and the arrow key logic. The client behaviour listed in plans/plan-command-history.md still has to be confirmed in game.
+Version 0.1.7. Automated tests cover the store, the recording rules and the arrow key logic. The client behaviour listed in plans/plan-command-history.md still has to be confirmed in game.
 
 ## Development
 
 `python3 tools/check.py` runs the Lua suites and compiles every shipped file (LuaJIT, Lua 5.1 semantics). `python3 tools/install.py --addons-dir <AddOns>` previews an installation and `--apply` performs it with a backup.
+
+## Artwork, 0.1.7
+
+Original journal, quill and hourglass emblem in the AddOns list, Titan Panel and minimap. The package includes its own 64px uncompressed 32-bit TGA. Large logos and avatars are in artwork/v1. A full restart and live visual confirmation are required.
+
+## Development folders and artwork
+
+Development folder: titan-command-history. Runtime addon folders are separate from artwork/. The versioned artwork/v1/ directory contains the original master PNG, logo-1024.png, avatar-400.png for CurseForge, icon-64.png and Icon.tga for each addon. artwork/index.json lists the available versions. Add future designs as a new version directory; keep previous artwork. Marketing PNGs and source masters are excluded from runtime ZIPs.
+
+## CurseForge project text
+
+Ready-to-copy summaries, descriptions and local artwork references are listed in [curseforge/ref-index.md](curseforge/ref-index.md).

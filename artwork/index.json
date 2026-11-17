@@ -1,0 +1,16 @@
+{
+  "current": "v1",
+  "versions": [
+    "v1"
+  ],
+  "addons": [
+    "TitanCommandHistory"
+  ],
+  "formats": [
+    "master.png",
+    "logo-1024.png",
+    "avatar-400.png",
+    "icon-64.png",
+    "Icon.tga"
+  ]
+}

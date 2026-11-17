@@ -1,0 +1,11 @@
+{
+  "tool": "built-in image_gen",
+  "edition": 1,
+  "assets": [
+    {
+      "id": "CommandHistory",
+      "folder": "TitanCommandHistory",
+      "prompt": "Use case: logo-brand. ONE square original fantasy game addon avatar for Titan Command History. Subject: an open aged parchment journal with a blue feather quill laid diagonally across it and a small antique gold hourglass, blank parchment with no writing. Family design: tactile hand-painted classic fantasy inventory artwork, dark midnight blue background, antique gold square bevel frame with restrained clipped corners inset 5 percent, strong simple central silhouette filling 75 percent. Bold polished highlights, readable at 64x64. Square 1024x1024. No letters, text, numerals, wordmarks, watermark or existing game/company logos. Single emblem, no collage. Match the gold-frame navy-background addon avatars in this conversation in finish and framing."
+    }
+  ]
+}
