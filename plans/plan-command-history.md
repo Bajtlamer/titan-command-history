@@ -42,7 +42,7 @@ Favorites replace the earlier pinned lines and quick commands: one list, shared 
 
 Implemented: persistent history with the arrow keys, recording only what worked (a slash word that does not exist is dropped, a line followed by an error within 0.4 seconds is dropped, /reload, /reloadui, /rl, /logout, /camp, /quit and /exit are recorded at once, lines still waiting are kept when the game closes), conversation lines (switchable), the window with panel tabs below it (Commands, Conversations, Favorites), search, scroll bar, Run and edit in the chat box, favorites (a separate list, typed or taken from a history line, ordered, run from the menu), the minimap button, the LibDataBroker object for Titan Panel, a saved window position, an opaque window and a diagnostic log that never holds the text of a line.
 
-The pinned facts the code relies on and that were confirmed live: EditBox:AddHistoryLine is called with the sent text, plain up and down arrows reach OnArrowPressed with the alt mode off, errors after a failed line arrive as UI_ERROR_MESSAGE, and the count shows after a reload.
+The pinned facts the code relies on and that were confirmed live: EditBox:AddHistoryLine is called with the sent text, plain up and down arrows reach OnArrowPressed with the alt mode off, errors after a failed line arrive as UI_ERROR_MESSAGE, and the count shows after a reload. Also confirmed in the saved data: the client adds a spoken line to the chat box history together with its chat type word ("/p hello", "/s hello", "/w Name hello"), so a leading slash does not mean a command. Since 0.1.8 History.Classify treats the chat type words (and channel numbers) as conversation lines and corrects older entries once.
 
 ### Live checks still to do
 

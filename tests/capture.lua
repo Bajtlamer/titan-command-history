@@ -54,6 +54,13 @@ test('conversation lines can be switched off', function()
     capture:Sent('/reload'); flush(timers); eq(H.Count(), 1)
 end)
 
+test('a spoken line stored with its chat type word follows the conversation setting', function()
+    local capture, H, timers, results = fresh({ recordChat = false })
+    capture:Sent('/p hello'); flush(timers)
+    eq(H.Count(), 0); eq(results[1], '/p hello:chat-off')
+    capture:Sent('/dance'); flush(timers); eq(H.Count(), 1)
+end)
+
 test('everything is recorded at once when only successful input is not required', function()
     local capture, H = fresh({ onlySuccess = false })
     capture:Sent('/relod'); capture:Sent('hello')

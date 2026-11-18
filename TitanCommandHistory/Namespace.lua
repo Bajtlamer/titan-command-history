@@ -1,2 +1,2 @@
 local _, ns = ...
-ns.version='0.1.7'
+ns.version='0.1.8'

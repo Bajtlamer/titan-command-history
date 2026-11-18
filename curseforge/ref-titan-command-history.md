@@ -42,7 +42,7 @@ Include the addon version, client build, active chat-box addons and a short repr
 
 Use **Summary** for the short project summary and **Description**, including its subsections, for the main project description. The notes below are preparation references and do not need to be pasted into the public description.
 
-- Current local version: `0.1.7`.
+- Current local version: `0.1.8`.
 - Intended client: WoW Forever 1.60.1, interface `16001`.
 - Runtime folder: `TitanCommandHistory`.
 - Dependencies and integrations: No required companion addon. Titan Panel is optional.

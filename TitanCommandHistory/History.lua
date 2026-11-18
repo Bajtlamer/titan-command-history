@@ -29,6 +29,15 @@ function History.Init(db, characterID)
             end
         end
     end
+    -- Before kindVersion 2 every line with a slash was stored as a command, spoken lines included. Corrected once.
+    if db.kindVersion ~= 2 then
+        local lists = { db.account.entries, db.favorites }
+        for _, character in pairs(db.characters) do lists[#lists + 1] = character.entries end
+        for _, entries in ipairs(lists) do
+            for _, entry in ipairs(entries) do entry.kind = History.Classify(entry.text) end
+        end
+        db.kindVersion = 2
+    end
 end
 
 function History.Settings() return History.db.settings end
@@ -51,9 +60,31 @@ function History.Trim(text)
     return (tostring(text):gsub('^%s+', ''):gsub('%s+$', ''))
 end
 
--- Text starting with a slash is a command, anything else is a conversation line.
+-- The client stores a spoken line in the chat box history together with the word of its chat type ("/p hello",
+-- "/w Name hello"), so a slash alone does not make a command. Slash words that speak are conversation lines.
+local CHAT_WORDS = {}
+for word in ('s say y yell sh shout p party g guild o officer raid ra rw raidwarning i instance bg battleground ' ..
+    'w whisper t tell send r reply e em emote'):gmatch('%S+') do CHAT_WORDS[word] = true end
+local CHAT_TYPES = { SAY = true, YELL = true, PARTY = true, RAID = true, RAID_WARNING = true, GUILD = true,
+    OFFICER = true, WHISPER = true, REPLY = true, INSTANCE_CHAT = true, BATTLEGROUND = true, EMOTE = true }
+
+-- Adds the chat words of the running client (they are localized): SLASH_<CHATTYPE><n> globals.
+function History.LoadChatWords(env)
+    for key, value in pairs(env) do
+        if type(key) == 'string' and type(value) == 'string' and value:sub(1, 1) == '/' then
+            local chatType = key:match('^SLASH_(.-)%d+$')
+            if chatType and CHAT_TYPES[chatType] then CHAT_WORDS[value:sub(2):lower()] = true end
+        end
+    end
+end
+
+-- A line is a command when it starts with a slash word that does not speak, anything else is a conversation line.
 function History.Classify(text)
-    return text:sub(1, 1) == '/' and 'command' or 'chat'
+    local word = text:match('^/(%S+)')
+    if not word then return 'chat' end
+    word = word:lower()
+    if CHAT_WORDS[word] or word:find('^%d+$') then return 'chat' end -- /1 hello is a channel number
+    return 'command'
 end
 
 local function limit(entries, max)

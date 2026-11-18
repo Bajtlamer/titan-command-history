@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: Titan Command History
 ## Notes: Persistent, shell style history of chat commands and lines with a window, Titan Panel plugin and minimap button.
-## Version: 0.1.7
+## Version: 0.1.8
 ## IconTexture: Interface\AddOns\TitanCommandHistory\Artwork\AddonIcon
 ## OptionalDeps: Titan
 ## SavedVariables: TitanCommandHistoryDB

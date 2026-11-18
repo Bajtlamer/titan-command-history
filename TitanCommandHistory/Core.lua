@@ -57,6 +57,7 @@ local function setup()
     ns.db = TitanCommandHistoryDB
     ns.db.log = ns.db.log or {}
     local guid = UnitGUID and UnitGUID('player')
+    ns.History.LoadChatWords(_G)
     ns.History.Init(ns.db, guid and public(guid) and guid or nil)
     capture = ns.Capture.New({
         Settings = ns.History.Settings,
